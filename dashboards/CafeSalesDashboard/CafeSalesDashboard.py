@@ -81,6 +81,9 @@ fig_top5 = px.bar(
 st.title("Cafe Sales Dashboard")
 st.write("This dashboard provides an overview of sales performance, customer behavior, and revenue trends for the cafe")
 st.divider()
+st.write(f"Top item this period: {top_items.iloc[0]['item']}")
+st.write(f"Most used payment method: {payment_method.sort_values('total_spent', ascending=False).iloc[0]['payment_method']}")
+
 #Tabs
 tab1, tab2, tab3, tab4 =st.tabs(["Overview", "Items", "Payments", "Trends"])
 
@@ -88,7 +91,7 @@ with tab1:
     st.subheader("Overview")
 
     col1, col2, col3 = st.columns(3)
-    col1.metric("Total Revenue", f"{total_revenue:,.2f}")
+    col1.metric("Total Revenue", f"${total_revenue:,.2f}")
     col2.metric("Total Transactions", total_transactions)
     col3.metric("Avg Order Value", f"${avg_order_value:,.2f}")
 
@@ -101,6 +104,9 @@ with tab2:
 with tab3:
     st.subheader("Payment Methods")
     st.plotly_chart(fig_payment, key="payment_chart")
+    if "Unknown Payment" in payment_method["payment_method"].values:
+        st.warning("Some transactions have missing payment method data. This may affect analysis.")
+
 
 with tab4:
     st.subheader("Revenue Trend")
@@ -113,3 +119,10 @@ with tab4:
 st.sidebar.subheader("Summary")
 st.sidebar.metric("Total Transactions", df_filtered.shape[0])
 st.sidebar.metric("Avg Order Value", f"${df_filtered['total_spent'].mean():.2f}")
+
+st.download_button(
+    "Download Filtered Data",
+    df_filtered.to_csv(index=False),
+    "filtered_data.csv",
+    "text/csv"
+)
